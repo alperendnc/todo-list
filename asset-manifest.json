@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/repo-adi/static/css/main.0585f336.css",
+    "main.js": "/repo-adi/static/js/main.28fa17f1.js",
+    "static/js/453.59bb3b6d.chunk.js": "/repo-adi/static/js/453.59bb3b6d.chunk.js",
+    "index.html": "/repo-adi/index.html",
+    "main.0585f336.css.map": "/repo-adi/static/css/main.0585f336.css.map",
+    "main.28fa17f1.js.map": "/repo-adi/static/js/main.28fa17f1.js.map",
+    "453.59bb3b6d.chunk.js.map": "/repo-adi/static/js/453.59bb3b6d.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.0585f336.css",
+    "static/js/main.28fa17f1.js"
+  ]
+}
