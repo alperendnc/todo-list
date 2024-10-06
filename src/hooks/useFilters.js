@@ -1,4 +1,3 @@
-const now = Date.now();
 const startOfToday = new Date(new Date().toDateString()).getTime();
 
 export const filterTasksByDate = (tasks, filterType) => {
