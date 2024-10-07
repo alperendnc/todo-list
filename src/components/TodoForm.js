@@ -1,106 +1,177 @@
 import { useEffect, useState } from "react";
 import useTodos from "../hooks/useTodos";
 import { v4 as uuidv4 } from "uuid";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import dayjs from "dayjs";
 
 const TodoForm = () => {
   const { addTodo, editingTodo, isEdit } = useTodos();
 
   const defaultValues = {
     id: "",
-    task: "",
+    title: "",
     description: "",
+    completed: false,
     note: "",
     date: "",
-    completed: false,
+    priority: "",
   };
 
   const [task, setTask] = useState(defaultValues);
-  const [showNoteInput, setShowNoteInput] = useState(false);
-  const [showDateInput, setShowDateInput] = useState(false);
+  const [isTaskInputVisible, setIsTaskInputVisible] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState("");
+  const [isPriorityDropdownVisible, setIsPriorityDropdownVisible] =
+    useState(false);
 
   useEffect(() => {
     if (isEdit) {
       setTask(editingTodo);
+      setIsTaskInputVisible(true);
     }
   }, [editingTodo, isEdit]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    let id = uuidv4();
-    if (isEdit) {
-      id = editingTodo.id;
-    }
+    const id = isEdit ? editingTodo.id : uuidv4();
     addTodo({ ...task, id });
     setTask(defaultValues);
-    setShowNoteInput(false);
-    setShowDateInput(false);
+    setIsTaskInputVisible(false);
   };
 
-  const handleAddNoteClick = () => {
-    setShowNoteInput(!showNoteInput);
+  const openModal = (content) => {
+    setModalContent(content);
+    setIsModalOpen(true);
   };
 
-  const handleDateChange = (date) => {
-    setTask({ ...task, date: dayjs(date).format("YYYY-MM-DD") });
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleModalSubmit = (e) => {
+    e.preventDefault();
+    closeModal();
+  };
+
+  const togglePriorityDropdown = () => {
+    setIsPriorityDropdownVisible(!isPriorityDropdownVisible);
+  };
+
+  const handlePrioritySelect = (priority) => {
+    setTask({ ...task, priority });
+    setIsPriorityDropdownVisible(false);
   };
 
   return (
-    <form className="todo-form" onSubmit={handleSubmit}>
-      <div className="input-container">
-        <input
-          type="text"
-          placeholder="Enter task"
-          value={task.task}
-          onChange={(e) => setTask({ ...task, task: e.target.value })}
-        />
-        <FontAwesomeIcon
-          icon={faCalendarAlt}
-          className="calendar-icon"
-          onClick={() => setShowDateInput(!showDateInput)}
-        />
-        {showDateInput ? (
-          <DatePicker
-            selected={task.date ? new Date(task.date) : null}
-            onChange={handleDateChange}
-            dateFormat="yyyy-MM-dd"
-            placeholderText="Select a date"
-            onClickOutside={() => setShowDateInput(false)}
-            autoFocus
-          />
-        ) : (
-          task.date && (
-            <span className="date-display">
-              {dayjs(task.date).format("MMMM D, YYYY")}
-            </span>
-          )
+    <div className="todo-form">
+      <form onSubmit={handleSubmit}>
+        <div className="input-container">
+          {!isTaskInputVisible ? (
+            <h3
+              className="add-task"
+              onClick={() => setIsTaskInputVisible(true)}
+            >
+              Add Task
+            </h3>
+          ) : (
+            <input
+              type="text"
+              placeholder="Enter task title"
+              value={task.title}
+              onChange={(e) => setTask({ ...task, title: e.target.value })}
+              autoFocus
+            />
+          )}
+        </div>
+
+        {isTaskInputVisible && task.title !== "" && (
+          <div className="add-buttons">
+            <button type="button" onClick={togglePriorityDropdown}>
+              {task.priority ? `Priority: ${task.priority}` : "Set Priority"}
+            </button>
+            <button type="button" onClick={() => openModal("date")}>
+              Add Date
+            </button>
+            <button type="button" onClick={() => openModal("note")}>
+              Add Note
+            </button>
+            <button type="button" onClick={() => openModal("description")}>
+              Add Description
+            </button>
+            <button type="submit">{isEdit ? "Edit Task" : "Add Task"}</button>
+          </div>
         )}
-      </div>
-      <input
-        type="text"
-        placeholder="Enter description"
-        value={task.description}
-        onChange={(e) => setTask({ ...task, description: e.target.value })}
-      />
-      <button type="submit">{isEdit ? "Edit Task" : "Add Task"}</button>
-      <button type="button" onClick={handleAddNoteClick}>
-        {showNoteInput ? "Hide Note" : "Add Note"}
-      </button>
-      {showNoteInput && (
-        <div>
-          <input
-            type="text"
-            placeholder="Enter Note"
-            value={task.note}
-            onChange={(e) => setTask({ ...task, note: e.target.value })}
-          />
+
+        {isPriorityDropdownVisible && (
+          <div className="priority-dropdown">
+            <ul>
+              <li onClick={() => handlePrioritySelect("Low")}>
+                <span
+                  className="priority-circle"
+                  style={{ backgroundColor: "green" }}
+                ></span>
+                Low
+              </li>
+              <li onClick={() => handlePrioritySelect("Medium")}>
+                <span
+                  className="priority-circle"
+                  style={{ backgroundColor: "orange" }}
+                ></span>
+                Medium
+              </li>
+              <li onClick={() => handlePrioritySelect("High")}>
+                <span
+                  className="priority-circle"
+                  style={{ backgroundColor: "red" }}
+                ></span>
+                High
+              </li>
+            </ul>
+          </div>
+        )}
+      </form>
+
+      {isModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>
+              {modalContent === "date"
+                ? "Add Date"
+                : modalContent === "note"
+                ? "Add Note"
+                : "Add Description"}
+            </h2>
+            <form onSubmit={handleModalSubmit}>
+              {modalContent === "date" && (
+                <input
+                  type="date"
+                  value={task.date}
+                  onChange={(e) => setTask({ ...task, date: e.target.value })}
+                />
+              )}
+              {modalContent === "note" && (
+                <textarea
+                  placeholder="Enter note"
+                  value={task.note}
+                  onChange={(e) => setTask({ ...task, note: e.target.value })}
+                />
+              )}
+              {modalContent === "description" && (
+                <textarea
+                  placeholder="Enter description"
+                  value={task.description}
+                  onChange={(e) =>
+                    setTask({ ...task, description: e.target.value })
+                  }
+                />
+              )}
+              <button type="submit">Save</button>
+              <button type="button" onClick={closeModal}>
+                Cancel
+              </button>
+            </form>
+          </div>
         </div>
       )}
-    </form>
+    </div>
   );
 };
 
