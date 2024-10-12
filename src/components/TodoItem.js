@@ -11,21 +11,19 @@ import {
 const TodoItem = ({ todo }) => {
   const { setIsEdit, setEditingTodo, toggleTodo, deleteTodo } = useTodos();
   const [showPopup, setShowPopup] = useState(false);
-  const [showDate, setShowDate] = useState(false);
+  const [popupContent, setPopupContent] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
 
-  if (!todo) {
-    return null;
-  }
+  if (!todo) return null;
 
-  const handleShowPopup = () => {
+  const handleShowPopup = (content) => {
+    setPopupContent(content);
     setShowPopup(true);
   };
 
   const handleClosePopup = () => {
     setShowPopup(false);
-    setShowDate(false);
   };
 
   const handleEdit = () => {
@@ -34,65 +32,82 @@ const TodoItem = ({ todo }) => {
     setShowPopup(false);
   };
 
-  const handleShowDate = () => {
-    setShowDate(true);
-  };
-
-  const fullText = todo.task;
+  const fullText = todo.title;
   const truncatedText =
-    fullText.length > 20 ? fullText.slice(0, 20) + "..." : fullText;
+    fullText.length > 30 ? fullText.slice(0, 30) + "..." : fullText;
 
-  const toggleText = () => {
-    setIsExpanded(!isExpanded);
-  };
+  const toggleText = () => setIsExpanded(!isExpanded);
 
   const fullDescription = todo.description || "";
   const truncatedDescription =
-    fullDescription.length > 20
-      ? fullDescription.slice(0, 20) + "..."
+    fullDescription.length > 30
+      ? fullDescription.slice(0, 30) + "..."
       : fullDescription;
 
-  const toggleDescription = () => {
-    setIsDescExpanded(!isDescExpanded);
-  };
+  const toggleDescription = () => setIsDescExpanded(!isDescExpanded);
+
+  const priorityList = [
+    { label: "High", value: "priority-high" },
+    { label: "Medium", value: "priority-medium" },
+    { label: "Low", value: "priority-low" },
+  ];
+
+  const currentPriority = priorityList.find(
+    (item) => item.label === todo.priority
+  );
+  const priorityClass = currentPriority ? currentPriority.value : "";
 
   return (
     <ul>
       <li
         className={`todo-item ${
           todo.completed ? "completed" : "not-completed"
-        }`}
+        } ${priorityClass}`}
       >
         <span onClick={() => toggleTodo(todo.id)}>
-          {isExpanded ? fullText : truncatedText}
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <span>{isExpanded ? fullText : truncatedText}</span>
+            {fullText.length > 30 && (
+              <span
+                className="show-more"
+                onClick={toggleText}
+                style={{ marginLeft: "10px" }}
+              >
+                {isExpanded ? "Show less" : "Show more"}
+              </span>
+            )}
+          </div>
         </span>
-        {fullText.length > 20 && (
-          <span className="show-more" onClick={toggleText}>
-            {isExpanded ? "Daha az" : "daha fazla"}
-          </span>
-        )}
 
         {todo.description && (
           <>
             <span className="todo-description">
-              {isDescExpanded ? fullDescription : truncatedDescription}
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <span>
+                  {isDescExpanded ? fullDescription : truncatedDescription}
+                </span>
+                {fullDescription.length > 30 && (
+                  <span
+                    className="show-more"
+                    onClick={toggleDescription}
+                    style={{ marginLeft: "10px" }}
+                  >
+                    {isDescExpanded ? "Show less" : "Show more"}
+                  </span>
+                )}
+              </div>
             </span>
-            {fullDescription.length > 20 && (
-              <span className="show-more" onClick={toggleDescription}>
-                {isDescExpanded ? "Daha az" : "Daha fazla"}
-              </span>
-            )}
           </>
         )}
 
         <div className="actions">
-          <button onClick={handleShowDate}>
+          <button onClick={() => handleShowPopup("date")}>
             <FontAwesomeIcon icon={faCalendarAlt} />
           </button>
-          <button onClick={handleShowPopup}>
+          <button onClick={() => handleShowPopup("note")}>
             <FontAwesomeIcon icon={faStickyNote} />
           </button>
-          <button onClick={() => handleEdit()}>
+          <button onClick={handleEdit}>
             <FontAwesomeIcon icon={faEdit} />
           </button>
           <button onClick={() => deleteTodo(todo.id)}>
@@ -104,18 +119,12 @@ const TodoItem = ({ todo }) => {
       {showPopup && (
         <div className="popup-overlay">
           <div className="popup-content">
-            <h2>Note</h2>
-            <p>{todo.note || "No note available"}</p>
-            <button onClick={handleClosePopup}>Close</button>
-          </div>
-        </div>
-      )}
-
-      {showDate && (
-        <div className="popup-overlay">
-          <div className="popup-content">
-            <h2>Date</h2>
-            <p>{todo.date || "No date available"}</p>
+            <h2>{popupContent === "note" ? "Note" : "Date"}</h2>
+            <p>
+              {popupContent === "note"
+                ? todo.note || "No note available"
+                : todo.date || "No date available"}
+            </p>
             <button onClick={handleClosePopup}>Close</button>
           </div>
         </div>
