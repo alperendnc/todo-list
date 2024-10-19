@@ -1,20 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TodoItem, TodoForm } from "./";
-import useTodos from "../hooks/useTodos";
+import useFirebase from "../hooks/useFirebase";
 import { filterTasksByDate } from "../hooks/useFilters";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 
 export default function TodoList({ filterType }) {
-  const { todos } = useTodos();
-  const todoList = todos || [];
+  const { getTodos } = useFirebase();
+  const [todos, setTodos] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    getTodos().then((todos) => setTodos(todos));
+    console.log("rendering");
+  }, []);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value.toLowerCase());
   };
 
-  const filteredTodos = filterTasksByDate(todoList, filterType).filter((todo) =>
+  const filteredTodos = filterTasksByDate(todos, filterType).filter((todo) =>
     todo.title.toLowerCase().includes(searchTerm)
   );
 

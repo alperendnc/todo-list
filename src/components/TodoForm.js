@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import useTodos from "../hooks/useTodos";
 import { v4 as uuidv4 } from "uuid";
+import useFirebase from "../hooks/useFirebase";
 
 const TodoForm = () => {
-  const { addTodo, editingTodo, isEdit } = useTodos();
+  const { editingTodo, isEdit } = useTodos();
+  const { addTodo } = useFirebase();
 
   const defaultValues = {
     id: "",
@@ -29,10 +31,10 @@ const TodoForm = () => {
     }
   }, [editingTodo, isEdit]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const id = isEdit ? editingTodo.id : uuidv4();
-    addTodo({ ...task, id });
+    await addTodo({ ...task, id });
     setTask(defaultValues);
     setIsTaskInputVisible(false);
   };
